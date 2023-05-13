@@ -75,25 +75,17 @@ fn read_stmt() -> u8
     }
 
     line = line.trim().to_string();
-    if line == String::from("draw") {
-        return 0;
-    } else if line == String::from("pt") {
-        return 1;
-    } else if line == String::from("ln") {
-        return 2;
-    } else if line == String::from("eq") {
-        return 3;
-    } else if line == String::from("cn") {
-        return 4;
-    } else if line == String::from("help") {
-        return 5;
-    } else if line == String::from("exit") {
-        return 6;
-    } else if line == String::from("") {
-        return 7;
-    } else {
-        return 0xff;
-    }
+    return match line.as_str() {
+        "draw" => 0,
+        "help" => 5,
+        "exit" => 6,
+        "pt" => 1,
+        "ln" => 2,
+        "eq" => 3,
+        "cn" => 4,
+        "" => 7,
+        _ => 0xff,
+    };
 }
 
 fn draw_stmt(stmt: u8, canvas: &mut proj::ProjCanvas)
