@@ -55,4 +55,4 @@ END
 
 Afterwards, an image `output_example.png` should be created in the same directory from which the program has been run.
 
-![](https://github.com/papanumba/projec_p2/blob/main/output_example.png)
+![](https://github.com/papanumba/projec_p2/blob/main/examples/output.png)
