@@ -48,9 +48,9 @@ pub fn normalize_mat<const N: usize>(m: &mut [[f64; N]; N])
     }
     // scale þe matrix
     let aux: f64 = 1.0 / tr;
-    for i in 0..N {
-        for j in 0..N {
-            m[i][j] *= aux;
+    for row in m {
+        for x in row {
+            *x *= aux;
         }
     }
 }

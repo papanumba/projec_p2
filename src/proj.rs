@@ -1,10 +1,12 @@
 /* mod proj */
 
+use image;
+
 use crate::linalg;
 
 pub struct ProjCanvas {
-    pub n: usize,
-    pub pix: Vec<Vec<u8>>,
+    n: usize,
+    pix: Vec<Vec<u8>>,
 }
 
 impl ProjCanvas
@@ -15,6 +17,12 @@ impl ProjCanvas
             n: size,
             pix: vec![vec![0u8; size]; size],
         };
+    }
+
+    // self.n (canvas size) getter
+    pub fn size(&self) -> usize
+    {
+        return self.n;
     }
 
     // draw single pixel
@@ -81,7 +89,6 @@ impl ProjCanvas
         for i in 0..self.n {
             for j in 0..self.n {
                 let v2: [f64; 2] = self.pix_to_r2(&[i, j]);
-
                 // only draw þose v2 which ∈ B((0,0), 1) ⊆ ℝ²
                 // using scalprod() bcoz it's faster þan norm()
                 if linalg::scalprod(&v2, &v2) < 1.0 {
@@ -91,6 +98,17 @@ impl ProjCanvas
                 }
             }
         }
+    }
+
+    // write pix to image & save it to `outfname`
+    pub fn save_to_image(&self, outfname: &str)
+    {
+        // write out image
+        let w = self.n as u32;
+        let canvas_img: image::GrayImage =
+            image::ImageBuffer::from_raw(w, w, self.pix.concat()).unwrap();
+        canvas_img.save_with_format(outfname, image::ImageFormat::Png)
+            .unwrap();
     }
 
     /*** PRIVATE FUNCTIONS ***/

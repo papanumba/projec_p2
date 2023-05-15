@@ -11,5 +11,5 @@ license = "GPL-3.0"
 image = "0.23.0"
 
 [profile.release]
-#lto = true
+lto = true
 strip = true

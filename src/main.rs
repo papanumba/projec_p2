@@ -4,7 +4,6 @@
 // https://en.wikipedia.org/wiki/Stereographic_projection \
 // #Visualization_of_lines_and_planes
 
-use image;
 use std::io::Write;
 
 mod linalg;
@@ -21,6 +20,7 @@ fn main()
         Ok(num) => w = num,
         Err(e) => panic!("{}", e),
     }
+
     if w < 2 {
         panic!("ERROR: size too small!");
     } else if w > 3000 {
@@ -28,7 +28,6 @@ fn main()
     }
 
     let mut canvas = proj::ProjCanvas::new(w);
-    let mut outfname: String = String::new();
 
     println!("OK");
 
@@ -37,7 +36,7 @@ fn main()
         std::io::stdout().flush().unwrap();
 
         let state: u8 = read_stmt();
-        /*  0: write & exit;
+        /*   0: write & exit;
          **  1: draw_point;
          **  2: draw_pts;
          **  3: draw_eq;
@@ -49,8 +48,9 @@ fn main()
 
         match state {
             0 => {
+                let mut outfname: String = String::new();
                 match std::io::stdin().read_line(&mut outfname) {
-                    Ok(_) => save_img(outfname.trim(), &canvas),
+                    Ok(_) => canvas.save_to_image(outfname.trim()),
                     Err(e) => eprintln!("{}", e),
                 };
                 break;
@@ -69,13 +69,12 @@ fn main()
 fn read_stmt() -> u8
 {
     let mut line: String = String::new();
-    let b = std::io::stdin().read_line(&mut line).unwrap();
+    let b: usize = std::io::stdin().read_line(&mut line).unwrap();
     if b == 0 {
         panic!("error: couldnt read line");
     }
 
-    line = line.trim().to_string();
-    return match line.as_str() {
+    return match line.trim() {
         "draw" => 0,
         "help" => 5,
         "exit" => 6,
@@ -171,26 +170,4 @@ fn print_help()
     println!("");
     println!("a point is given by 3 real numbers separated by space ' '");
     println!("a matrix is given by entering 3 points for each row");
-}
-
-fn save_img(outfname: &str, canvas: &proj::ProjCanvas)
-{
-    let w: u32 = canvas.pix.len() as u32;
-
-    // write out image
-    let mut canvas_img: image::GrayImage = image::ImageBuffer::new(w, w);
-    write_img(&mut canvas_img, &canvas.pix);
-    canvas_img
-        .save_with_format(outfname, image::ImageFormat::Png)
-        .unwrap();
-}
-
-fn write_img(img: &mut image::GrayImage, pix: &Vec<Vec<u8>>)
-{
-    let w = pix.len();
-    for i in 0..w {
-        for j in 0..w {
-            img.put_pixel(i as u32, j as u32, image::Luma([pix[i][j]]));
-        }
-    }
 }
