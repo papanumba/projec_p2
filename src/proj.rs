@@ -19,10 +19,24 @@ impl ProjCanvas
         };
     }
 
+    // clear canvas
+    pub fn fill_zeros(&mut self)
+    {
+        for row in &mut self.pix {
+            row.fill(0);
+        }
+    }
+
     // self.n (canvas size) getter
     pub fn size(&self) -> usize
     {
         return self.n;
+    }
+
+    // return flattened Vec from the `self.pix` matrix
+    pub fn pix_flat(&self) -> Vec<u8>
+    {
+        return self.pix.concat();
     }
 
     // draw single pixel
@@ -106,7 +120,8 @@ impl ProjCanvas
         // write out image
         let w = self.n as u32;
         let canvas_img: image::GrayImage =
-            image::ImageBuffer::from_raw(w, w, self.pix.concat()).unwrap();
+            image::ImageBuffer::from_raw(w, w, self.pix_flat())
+            .unwrap();
         canvas_img.save_with_format(outfname, image::ImageFormat::Png)
             .unwrap();
     }
