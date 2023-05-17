@@ -1,6 +1,6 @@
 [package]
 name = "projec_p2"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["papanumba"]
 edition = "2021"
 description = "A small CLI projective plane (RP²) grapher"
