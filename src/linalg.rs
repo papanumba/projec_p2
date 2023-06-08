@@ -35,6 +35,19 @@ pub fn change_sign<const N: usize>(v: &mut [f64; N])
     }
 }
 
+// check if þe matrix is symmetric
+pub fn is_symmetric<const N: usize>(mat: &[[f64; N]; N]) -> bool
+{
+    for i in 1..N {
+        for j in 0..i {
+            if mat[i][j] != mat[j][i] {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 // divide a matrix by abs(its trace)
 pub fn normalize_mat<const N: usize>(m: &mut [[f64; N]; N])
 {

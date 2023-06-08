@@ -93,6 +93,9 @@ impl ProjCanvas
     // draw conic given by a matrix
     pub fn draw_conic(&mut self, mat_raw: &[[f64; 3]; 3])
     {
+        if ! linalg::is_symmetric(mat_raw) {
+            eprintln!("WARNING @ draw_conic: matrix is not symmetric");
+        }
         let mut mat = mat_raw.clone();
         for i in 0..3 {
             mat[i] = mat_raw[i].clone();
