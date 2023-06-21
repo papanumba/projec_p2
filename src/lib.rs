@@ -4,11 +4,76 @@
 // https://en.wikipedia.org/wiki/Stereographic_projection \
 // #Visualization_of_lines_and_planes
 
+#![allow(dead_code)]
+
+#[macro_use]
+extern crate lalrpop_util;
+
 use std::io::Write;
+use pyo3::prelude::*;
+use pyo3::exceptions::PyValueError;
 
 mod linalg;
 mod proj;
+mod ast;
+lalrpop_mod!(pub repenser);
 
+#[pyclass]
+pub struct ProjWrap {
+    canvas: proj::ProjCanvas,
+}
+
+#[pymethods]
+impl ProjWrap
+{
+    #[new]
+    fn new(n: usize) -> PyResult<Self>
+    {
+        println!("creating obj");
+        return if n == 0 {
+            Err(PyValueError::new_err("Error from rust: size is 0"))
+        } else {
+            Ok(Self { canvas: proj::ProjCanvas::new(n) })
+        };
+    }
+
+    // reset þe canvas to black
+    pub fn reset(&mut self)
+    {
+        self.canvas.fill_zeros();
+    }
+
+    // parse þe taco & draw it upon þe now canvas
+    pub fn draw_taco(&mut self, taco: &str) -> PyResult<()>
+    {
+        let tarser = repenser::ScriptParser::new();
+        let result = tarser.parse(taco);
+        let script: ast::Script;
+        match result {
+            Ok(s) => script = s,
+            Err(_) => return Err(PyValueError::new_err("Error parsing")),
+        }
+        for f in script.figs {
+            match f {
+                ast::Fig::Eq(v) => self.canvas.draw_line_by_eq(&[v.0, v.1, v.2]),
+            }
+        }
+        return Ok(());
+    }
+
+    // returns 8-bit grayscale buffer
+    pub fn get_pix_buff(&self) -> Vec<u8>
+    {
+        return self.canvas.pix_flat();
+    }
+}
+
+#[pymodule]
+fn projec_p2(_py: Python, m: &PyModule) -> PyResult<()>
+{
+    m.add_class::<ProjWrap>()?;
+    return Ok(());
+}
 
 fn main()
 {
@@ -171,3 +236,23 @@ fn print_help()
     println!("a point is given by 3 real numbers separated by space ' '");
     println!("a matrix is given by entering 3 points for each row");
 }
+
+/*// expected 3 numbers separated by space
+fn parse_vec(s: &str) -> [f64; 3]
+{
+    let vec3_re  = regex::Regex::new(r"^\d+ +\d+ +\d+ *$").unwrap();
+    let float_re = regex::Regex::new(r"\d+").unwrap();
+    if !vec3_re.is_match(s) {
+        eprintln!("ERROR: {:?}, not a vector", vec3_re);
+        return [0.0, 0.0, 1.0];
+    }
+    let mut vec3 = [1.0; 3];
+    for (i, f) in float_re.captures_iter(s).enumerate() {
+        match f.get(0) {
+            Some(m) => vec3[i] = m.as_str().parse::<f64>().unwrap(),
+            _ => panic!(),
+        }
+    }
+    return vec3;
+}
+*/

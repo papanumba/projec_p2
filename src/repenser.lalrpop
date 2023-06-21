@@ -1,0 +1,30 @@
+use std::str::FromStr;
+use std::collections::VecDeque;
+use crate::ast;
+
+grammar;
+
+pub Script: ast::Script = {
+    Size Block => ast::Script::from(<>),
+}
+
+Block: VecDeque<ast::Fig> = {
+    EqFig => VecDeque::from([<>]),
+    <mut b:Block> <f:EqFig> => { b.push_back(f); b},
+}
+
+EqFig: ast::Fig = {
+    "eq" <v:Vec3> => ast::Fig::Eq(v),
+}
+
+Vec3: ast::Vec3 = {
+    <v0:Num> <v1:Num> <v2:Num> => ast::Vec3(v0, v1, v2),
+};
+
+Num: f64 = {
+    r"[+-]?[0-9]+\.([0-9]+)?" => f64::from_str(<>).unwrap(),
+};
+
+Size: u32 = {
+    "size " <s:r"[0-9]+"> => u32::from_str(s).unwrap(),
+};
