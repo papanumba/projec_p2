@@ -40,11 +40,12 @@ def zero_if_empty(t):
 
 def format_float(f):
     f = zero_if_empty(f)
-    try:
+    '''try:
         f = float(f)
         f = "{:.4f}".format(f)
     except:
         pass
+    '''
     return f
 
 

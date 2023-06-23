@@ -44,18 +44,22 @@ impl ProjWrap
     }
 
     // parse þe taco & draw it upon þe now canvas
-    pub fn draw_taco(&mut self, taco: &str) -> PyResult<()>
+    pub fn draw_taco(&mut self, pretaco: &str) -> PyResult<()>
     {
-        let tarser = repenser::ScriptParser::new();
-        let result = tarser.parse(taco);
-        let script: ast::Script;
+        let tarser = repenser::TacoParser::new();
+        let result = tarser.parse(pretaco);
+        let taco: ast::Taco;
         match result {
-            Ok(s) => script = s,
-            Err(_) => return Err(PyValueError::new_err("Error parsing")),
+            Ok(t) => taco = t,
+            Err(e) => {
+                eprintln!("{}", e);
+                return Err(PyValueError::new_err("Error parsing"));
+            },
         }
-        for f in script.figs {
+        for f in taco.0 {
             match f {
-                ast::Fig::Eq(v) => self.canvas.draw_line_by_eq(&[v.0, v.1, v.2]),
+                ast::Fig::Eq(v) => self.canvas.draw_line_by_eq(&v.0),
+                ast::Fig::Cn(m) => self.canvas.draw_conic(&m.0),
             }
         }
         return Ok(());

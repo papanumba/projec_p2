@@ -121,12 +121,12 @@ def preproc_taco():
         taco += fig.get_as_str() + "\n"
     for (prm, scl) in params.items():
         taco = re.sub(r"\b" + prm + r"\b", "{:.4f}".format(scl.get()), taco)
-    return "size 120\n" + taco
+    return taco
 
 def draw_tk_img():
     global tk_img
     taco = preproc_taco()
-    #print(taco)
+    print(taco)
     r.reset()
     try:
         r.draw_taco(taco)

@@ -2,36 +2,21 @@
 
 use std::collections::VecDeque;
 
-pub struct Vec3(pub f64, pub f64, pub f64);
+pub struct Vec3(pub [f64; 3]);
+pub struct Mat3(pub [[f64; 3]; 3]);
 
 pub enum Fig
 {
     Eq(Vec3),
-    // Cn(Mat3),
+    Cn(Mat3),
 }
 
+pub struct Taco(pub VecDeque<Fig>);
 
-pub struct Script
+impl Taco
 {
-    pub size: u32,
-    pub figs: VecDeque<Fig>,
-}
-
-impl Script
-{
-    pub fn from(s: u32, l: VecDeque<Fig>) -> Self
+    pub fn push_back(&mut self, f: Fig)
     {
-        return Self {size: s, figs: l};
-    }
-
-    pub fn print(&self)
-    {
-        println!("size {}", self.size);
-        for fig in &self.figs {
-            match fig {
-                Fig::Eq(v) => println!("eq {} {} {}\n", v.0, v.1, v.2),
-                //_ => todo!(),
-            };
-        }
+        self.0.push_back(f);
     }
 }
