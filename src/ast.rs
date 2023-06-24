@@ -2,8 +2,8 @@
 
 use std::collections::VecDeque;
 
-pub struct Vec3(pub [f64; 3]);
-pub struct Mat3(pub [[f64; 3]; 3]);
+pub type Vec3 = [f64; 3];
+pub type Mat3 = [[f64; 3]; 3];
 
 pub enum Fig
 {

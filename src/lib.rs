@@ -1,4 +1,4 @@
-/* nov-2022 */
+/* nov-2022 - jun 2023 */
 // all suposed for ℝ³ vector space which gives P² projective plane
 // infty line = {x[2] == 0}
 // https://en.wikipedia.org/wiki/Stereographic_projection \
@@ -10,7 +10,7 @@
 extern crate lalrpop_util;
 
 use pyo3::prelude::*;
-use pyo3::exceptions::PyValueError;
+use pyo3::exceptions::*;
 
 mod linalg;
 mod proj;
@@ -28,11 +28,10 @@ impl ProjWrap
     #[new]
     fn new(n: usize) -> PyResult<Self>
     {
-        println!("creating obj");
-        return if n == 0 {
-            Err(PyValueError::new_err("Error from rust: size is 0"))
-        } else {
-            Ok(Self { canvas: proj::ProjCanvas::new(n) })
+        //println!("creating obj");
+        return match n {
+            0 => Err(PyValueError::new_err("Error from rust: size is 0")),
+            _ => Ok(Self { canvas : proj::ProjCanvas::new(n) }),
         };
     }
 
@@ -45,20 +44,19 @@ impl ProjWrap
     // parse þe taco & draw it upon þe now canvas
     pub fn draw_taco(&mut self, pretaco: &str) -> PyResult<()>
     {
+        // parse
         let tarser = repenser::TacoParser::new();
         let result = tarser.parse(pretaco);
         let taco: ast::Taco;
         match result {
             Ok(t) => taco = t,
-            Err(e) => {
-                eprintln!("{}", e);
-                return Err(PyValueError::new_err("Error parsing"));
-            },
+            Err(e) => return Err(PySyntaxError::new_err(e.to_string())),
         }
+        // draw
         for f in taco.0 {
             match f {
-                ast::Fig::Eq(v) => self.canvas.draw_line_by_eq(&v.0),
-                ast::Fig::Cn(m) => self.canvas.draw_conic(&m.0),
+                ast::Fig::Eq(v) => self.canvas.draw_line_by_eq(&v),
+                ast::Fig::Cn(m) => self.canvas.draw_conic(&m),
             }
         }
         return Ok(());
@@ -70,6 +68,8 @@ impl ProjWrap
         return self.canvas.pix_flat();
     }
 }
+
+/* pyo3 boiler-plate */
 
 #[pymodule]
 fn projec_p2(_py: Python, m: &PyModule) -> PyResult<()>

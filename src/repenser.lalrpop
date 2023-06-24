@@ -5,26 +5,21 @@ use crate::ast;
 grammar;
 
 pub Taco: ast::Taco = {
-    EqFig => ast::Taco(VecDeque::from([<>])),
-    CnFig => ast::Taco(VecDeque::from([<>])),
-    <mut t:Taco> <f:EqFig> => { t.push_back(f); t},
-    <mut t:Taco> <f:CnFig> => { t.push_back(f); t},
+    Fig => ast::Taco(VecDeque::from([<>])),
+    <mut t:Taco> <f:Fig> => { t.push_back(f); t },
 }
 
-EqFig: ast::Fig = {
-    "eq" <v:Vec3> => ast::Fig::Eq(v)
-}
-
-CnFig: ast::Fig = {
-    "cn" <m:Mat3> => ast::Fig::Cn(m)
+Fig: ast::Fig = {
+    "eq" <v:Vec3> => ast::Fig::Eq(v),
+    "cn" <m:Mat3> => ast::Fig::Cn(m),
 }
 
 Mat3: ast::Mat3 = {
-    <v:Vec3> <w:Vec3> <x:Vec3> => ast::Mat3([v.0, w.0, x.0])
+    Vec3 Vec3 Vec3 => [<>]
 }
 
 Vec3: ast::Vec3 = {
-    <v0:Num> <v1:Num> <v2:Num> => ast::Vec3([v0, v1, v2])
+    Num Num Num => [<>]
 }
 
 Num: f64 = {
