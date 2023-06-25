@@ -11,3 +11,5 @@ Cargo.lock
 
 **/*.png
 bin/*
+python/*.so
+python/__pycache__/

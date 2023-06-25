@@ -130,8 +130,8 @@ def draw_tk_img():
     r.reset()
     try:
         r.draw_taco(taco)
-    except:
-        print("error at draw_taco")
+    except SyntaxError as se:
+        print(str(se))
 
 b4 = tk.Button(
     master=right_frame,
