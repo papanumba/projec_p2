@@ -55,7 +55,10 @@ impl ProjWrap
         // draw
         for f in taco.0 {
             match f {
-                ast::Fig::Eq(v) => self.canvas.draw_line_by_eq(&v),
+                ast::Fig::Eq(v) => {
+                    self.canvas.draw_line_by_eq(&v);
+                    self.canvas.draw_point(&v);
+                    },
                 ast::Fig::Cn(m) => self.canvas.draw_conic(&m),
             }
         }

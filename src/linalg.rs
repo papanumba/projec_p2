@@ -89,3 +89,13 @@ pub fn scalprod<const N: usize>(v: &[f64; N], w: &[f64; N]) -> f64
     }
     return sum;
 }
+
+// cross product only for R³
+pub fn crosprod3(v: &[f64; 3], w: &[f64; 3]) -> [f64; 3]
+{
+    return [
+        v[1] * w[2] - v[2] * w[1],
+        v[2] * w[0] - v[0] * w[2],
+        v[0] * w[1] - v[1] * w[0],
+    ];
+}

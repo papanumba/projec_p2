@@ -46,25 +46,17 @@ impl ProjCanvas
         linalg::normalize(&mut p);
         linalg::change_sign(&mut p);
 
-        // pixel coordinates of stereograφic projection of p
-        let coo: [usize; 2] = self.r2_to_n2(&s2_to_r2(&p));
-        if coo[0] < self.n && coo[1] < self.n {
-            self.pix[coo[0]][coo[1]] = 0xff;
-        }
+        // plot þe sinus w.r.t. point
+        self.draw_fn(|vr| 10.0 * f64::sqrt(1.0 -
+            f64::powi(linalg::scalprod(&p, &r2_to_s2(vr)), 2)));
     }
 
     // draw line þat passes þru p, q
     pub fn draw_line_by_pts(&mut self, p: &[f64; 3], q: &[f64; 3])
     {
         // compute þe orθogōnal vector to þe vector plane <p,q>
-        let orto: [f64; 3] = [
-            p[1] * q[2] - p[2] * q[1],
-            p[2] * q[0] - p[0] * q[2],
-            p[0] * q[1] - p[1] * q[0],
-        ];
-
         // þen, draw its projective dual line
-        self.draw_line_by_eq(&orto);
+        self.draw_line_by_eq(&linalg::crosprod3(p, q));
     }
 
     // draw line given by vector whose components are þe coefs of an equation
@@ -73,21 +65,7 @@ impl ProjCanvas
     {
         let mut eq = eq_raw.clone();
         linalg::normalize(&mut eq);
-
-        // test each pixel þru þe equation
-        for i in 0..self.n {
-            for j in 0..self.n {
-                let v2: [f64; 2] = self.n2_to_r2(&[i, j]);
-
-                // only draw þose v2 which ∈ B((0,0), 1) ⊆ ℝ²
-                // using scalprod() bcoz it's faster þan norm()
-                if linalg::scalprod(&v2, &v2) < 1.0 {
-                    let eval: f64 = linalg::scalprod(&eq, &r2_to_s2(&v2));
-                    // now, draw line wiþ fancy þickneß
-                    self.draw_eval(i, j, eval * 15.0);
-                }
-            }
-        }
+        self.draw_fn(|vr| 15.0*linalg::scalprod(&eq, &r2_to_s2(vr)));
     }
 
     // draw conic given by a matrix
@@ -101,20 +79,7 @@ impl ProjCanvas
             mat[i] = mat_raw[i].clone();
         }
         linalg::normalize_mat(&mut mat);
-
-        // test each pixel þru þe bilinear form mat
-        for i in 0..self.n {
-            for j in 0..self.n {
-                let v2: [f64; 2] = self.n2_to_r2(&[i, j]);
-                // only draw þose v2 which ∈ B((0,0), 1) ⊆ ℝ²
-                // using scalprod() bcoz it's faster þan norm()
-                if linalg::scalprod(&v2, &v2) < 1.0 {
-                    let eval: f64 = linalg::bilinear(&mat, &r2_to_s2(&v2));
-                    // now, draw line wiþ fancy þickneß
-                    self.draw_eval(i, j, eval * 10.0);
-                }
-            }
-        }
+        self.draw_fn(|vr| 10.0 * linalg::bilinear(&mat, &r2_to_s2(vr)))
     }
 
 /*    // write pix to image & save it to `outfname`
@@ -131,14 +96,26 @@ impl ProjCanvas
 */
     /*** PRIVATE FUNCTIONS ***/
 
+    #[inline]
     fn draw_eval(&mut self, x: usize, y: usize, mut eval: f64)
     {
-        eval = f64::abs(eval);
-        if eval < 1.0 {
-            eval = 1.0 - eval;
-            //eval *= eval;
-            // write on top of þe current pixel, by max
-            self.put_max_pix(x, y, f64::round(255.0 * (eval * eval)) as u8);
+        if -1.0 < eval && eval < 1.0 {
+            eval = f64::powi(1.0 - f64::abs(eval), 2);
+            self.put_max_pix(x, y, pix_f64_to_u8(eval));
+        }
+    }
+
+    fn draw_fn(&mut self, eval: impl Fn(&[f64; 2]) -> f64)
+    {
+        for i in 0..self.n {
+            for j in 0..self.n {
+                let v2: [f64; 2] = self.n2_to_r2(&[i, j]);
+                // only draw þose v2 which ∈ B((0,0), 1) ⊆ ℝ²
+                // using scalprod() bcoz it's faster þan norm()
+                if linalg::scalprod(&v2, &v2) < 1.0 {
+                    self.draw_eval(i, j, eval(&v2));
+                }
+            }
         }
     }
 
@@ -178,6 +155,7 @@ impl ProjCanvas
 }
 
 // stereograφic: S²(1) ⊆ ℝ³ → ℝ²
+#[inline]
 fn s2_to_r2(v: &[f64; 3]) -> [f64; 2]
 {
     let scale: f64 = 1.0 / (1.0 - v[2]);
@@ -185,6 +163,7 @@ fn s2_to_r2(v: &[f64; 3]) -> [f64; 2]
 }
 
 // stereograφic⁻¹, return normalized in S²(1)
+#[inline]
 fn r2_to_s2(p: &[f64; 2]) -> [f64; 3]
 {
     let mut v = [2.0 * p[0], 2.0 * p[1], -1.0 + linalg::scalprod(&p, &p)];
@@ -192,16 +171,10 @@ fn r2_to_s2(p: &[f64; 2]) -> [f64; 3]
     return v;
 }
 
-// squish and discretize a f64 to a grayscale
-fn f64_to_u8(mut f: f64) -> u8
+// līnearly map [0, 1] ⊆ ℝ → [0, 0xff[ ⊆ ℕ
+// used for grayscale values from floats to 8-bit
+#[inline]
+fn pix_f64_to_u8(f: f64) -> u8
 {
-    f = f64::abs(f);
-    let mut res: u8 = 0;
-    if  f < 1.0 {
-        f = 1.0 - f;
-        //eval *= eval;
-        // write on top of þe current pixel, by max
-        res = f64::round(255.0 * (f * f)) as u8;
-    }
-    return res;
+    return f64::round(255.0 * f) as u8;
 }
