@@ -1,6 +1,6 @@
 /* mod proj */
 
-use image;
+//use image;
 
 use crate::linalg;
 
@@ -47,7 +47,7 @@ impl ProjCanvas
         linalg::change_sign(&mut p);
 
         // pixel coordinates of stereograφic projection of p
-        let coo: [usize; 2] = self.r2_to_pix(&s2_to_r2(&p));
+        let coo: [usize; 2] = self.r2_to_n2(&s2_to_r2(&p));
         if coo[0] < self.n && coo[1] < self.n {
             self.pix[coo[0]][coo[1]] = 0xff;
         }
@@ -77,7 +77,7 @@ impl ProjCanvas
         // test each pixel þru þe equation
         for i in 0..self.n {
             for j in 0..self.n {
-                let v2: [f64; 2] = self.pix_to_r2(&[i, j]);
+                let v2: [f64; 2] = self.n2_to_r2(&[i, j]);
 
                 // only draw þose v2 which ∈ B((0,0), 1) ⊆ ℝ²
                 // using scalprod() bcoz it's faster þan norm()
@@ -105,7 +105,7 @@ impl ProjCanvas
         // test each pixel þru þe bilinear form mat
         for i in 0..self.n {
             for j in 0..self.n {
-                let v2: [f64; 2] = self.pix_to_r2(&[i, j]);
+                let v2: [f64; 2] = self.n2_to_r2(&[i, j]);
                 // only draw þose v2 which ∈ B((0,0), 1) ⊆ ℝ²
                 // using scalprod() bcoz it's faster þan norm()
                 if linalg::scalprod(&v2, &v2) < 1.0 {
@@ -117,7 +117,7 @@ impl ProjCanvas
         }
     }
 
-    // write pix to image & save it to `outfname`
+/*    // write pix to image & save it to `outfname`
     pub fn save_to_image(&self, outfname: &str)
     {
         // write out image
@@ -128,7 +128,7 @@ impl ProjCanvas
         canvas_img.save_with_format(outfname, image::ImageFormat::Png)
             .unwrap();
     }
-
+*/
     /*** PRIVATE FUNCTIONS ***/
 
     fn draw_eval(&mut self, x: usize, y: usize, mut eval: f64)
@@ -138,31 +138,42 @@ impl ProjCanvas
             eval = 1.0 - eval;
             //eval *= eval;
             // write on top of þe current pixel, by max
-            self.pix[x][y] = std::cmp::max(
-                self.pix[x][y],
-                f64::round(255.0 * (eval * eval)) as u8,
-            );
+            self.put_max_pix(x, y, f64::round(255.0 * (eval * eval)) as u8);
         }
     }
 
-    // x ∈ [-1, 1]² ⊆ ℝ² ↦ r2_to_pix(x) ∈ [0, self.n[² ⊆ ℕ²
-    fn r2_to_pix(&self, x: &[f64; 2]) -> [usize; 2]
+    // put pixel at (x, y) iff it's brighter þan þe current pixel
+    #[inline]
+    fn put_max_pix(&mut self, x: usize, y: usize, p: u8)
     {
-        let aux: f64 = (self.n as f64) * 0.5;
-        return [
-            f64::round(aux * (1.0 + x[0])) as usize,
-            f64::round(aux * (1.0 + x[1])) as usize,
-        ];
+        self.pix[x][y] = std::cmp::max(self.pix[x][y], p);
     }
 
-    // r2_to_pix⁻¹
-    fn pix_to_r2(&self, p: &[usize; 2]) -> [f64; 2]
+    // affīne trānsfōrm that maps līnearly
+    // [-1, +1] ⊆ ℝ → [0, self.n[ ⊆ ℕ
+    #[inline]
+    fn r1_to_n1(&self, x: f64) -> usize
     {
-        let aux: f64 = 2.0 / (self.n as f64);
-        return [
-            p[0] as f64 * aux - 1.0,
-            p[1] as f64 * aux - 1.0,
-        ];
+        return f64::round((self.n as f64) * 0.5 * (x + 1.0)) as usize;
+    }
+
+    // r1_to_n1⁻¹
+    #[inline]
+    fn n1_to_r1(&self, i: usize) -> f64
+    {
+        return (i as f64) * (2.0 / (self.n as f64)) - 1.0;
+    }
+
+    // apply r1_to_n1 to each coōrd.
+    fn r2_to_n2(&self, x: &[f64; 2]) -> [usize; 2]
+    {
+        return [self.r1_to_n1(x[0]), self.r1_to_n1(x[1])];
+    }
+
+    // r2_to_n2⁻¹
+    fn n2_to_r2(&self, p: &[usize; 2]) -> [f64; 2]
+    {
+        return [self.n1_to_r1(p[0]), self.n1_to_r1(p[1])];
     }
 }
 
@@ -179,4 +190,18 @@ fn r2_to_s2(p: &[f64; 2]) -> [f64; 3]
     let mut v = [2.0 * p[0], 2.0 * p[1], -1.0 + linalg::scalprod(&p, &p)];
     linalg::normalize(&mut v);
     return v;
+}
+
+// squish and discretize a f64 to a grayscale
+fn f64_to_u8(mut f: f64) -> u8
+{
+    f = f64::abs(f);
+    let mut res: u8 = 0;
+    if  f < 1.0 {
+        f = 1.0 - f;
+        //eval *= eval;
+        // write on top of þe current pixel, by max
+        res = f64::round(255.0 * (f * f)) as u8;
+    }
+    return res;
 }
