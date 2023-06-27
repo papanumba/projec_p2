@@ -16,6 +16,7 @@ class Figure:
         for j in range(3):
             f.columnconfigure(j, weight=1)
         self.frame = f
+        self.text = fig_text
         self.label = tk.Label(self.frame, text=fig_text)
         self.label.grid(row=0, column=0)
         self.x_btn = tk.Button(
@@ -47,6 +48,45 @@ def format_float(f):
         pass
     '''
     return f
+
+
+class Pt(Figure):
+    def __init__(self, root, idf, del_cbk):
+        super().__init__(root, idf, del_cbk, "pt")
+        self.vec = []
+        for j in range(3):
+            e = tk.Entry(self.frame)
+            e.grid(row=1, column=j)
+            self.vec.append(e)
+
+    def get_as_str(self):
+        s = ""
+        for j in range(3):
+            s += format_float(self.vec[j].get()) + " "
+        s = s[:-1]
+        return s
+
+
+class Ln(Figure):
+    def __init__(self, root, idf, del_cbk):
+        super().__init__(root, idf, del_cbk, "ln")
+        self.pts = []
+        for p in range(2):
+            vec = []
+            for j in range(3):
+                e = tk.Entry(self.frame)
+                e.grid(row=1+p, column=j)
+                vec.append(e)
+            self.pts.append(vec)
+
+    def get_as_str(self):
+        s = ""
+        for i in range(2):
+            for j in range(3):
+                s += format_float(self.pts[i][j].get()) + " "
+            s = s[:-1] + "\n"
+        s = s[:-1]
+        return s
 
 
 class Eq(Figure):
@@ -86,6 +126,7 @@ class Cn(Figure):
             s = s[:-1] + "\n"
         s = s[:-1]
         return s
+
 
 class Param:
     def __init__(self, rootframe, name, cbk):

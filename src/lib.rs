@@ -22,6 +22,7 @@ pub struct ProjWrap {
     canvas: proj::ProjCanvas,
 }
 
+// python-public methods
 #[pymethods]
 impl ProjWrap
 {
@@ -53,14 +54,8 @@ impl ProjWrap
             Err(e) => return Err(PySyntaxError::new_err(e.to_string())),
         }
         // draw
-        for f in taco.0 {
-            match f {
-                ast::Fig::Eq(v) => {
-                    self.canvas.draw_line_by_eq(&v);
-                    self.canvas.draw_point(&v);
-                    },
-                ast::Fig::Cn(m) => self.canvas.draw_conic(&m),
-            }
+        for f in &taco.0 {
+            self.draw_fig(f);
         }
         return Ok(());
     }
@@ -69,6 +64,20 @@ impl ProjWrap
     pub fn get_pix_buff(&self) -> Vec<u8>
     {
         return self.canvas.pix_flat();
+    }
+}
+
+// private rust-only methods
+impl ProjWrap
+{
+    fn draw_fig(&mut self, f: &ast::Fig)
+    {
+        match f {
+            ast::Fig::Pt(v) => self.canvas.draw_point(&v),
+            ast::Fig::Ln(v, w) => self.canvas.draw_line_by_pts(&v, &w),
+            ast::Fig::Eq(v) => self.canvas.draw_line_by_eq(&v),
+            ast::Fig::Cn(m) => self.canvas.draw_conic(&m),
+        }
     }
 }
 

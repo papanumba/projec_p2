@@ -7,6 +7,8 @@ pub type Mat3 = [[f64; 3]; 3];
 
 pub enum Fig
 {
+    Pt(Vec3),
+    Ln(Vec3, Vec3),
     Eq(Vec3),
     Cn(Mat3),
 }

@@ -6,6 +6,7 @@ import PIL
 from PIL import ImageTk
 import figures
 import re
+import time
 
 # global projec_p2 object
 
@@ -55,7 +56,12 @@ def gen_entry_idf():
 
 def add_fig(fig_type):
     idf = gen_entry_idf()
-    if   fig_type == "eq":
+    # FIXME: stinky polymorfism
+    if   fig_type == "pt":
+        fig = figures.Pt(right_frame, idf, lambda: del_fig(idf))
+    elif fig_type == "ln":
+        fig = figures.Ln(right_frame, idf, lambda: del_fig(idf))
+    elif fig_type == "eq":
         fig = figures.Eq(right_frame, idf, lambda: del_fig(idf))
     elif fig_type == "cn":
         fig = figures.Cn(right_frame, idf, lambda: del_fig(idf))
@@ -114,10 +120,10 @@ def update_tk_img():
 def preproc_taco():
     taco = ""
     for fig in entries:
-        if isinstance(fig, figures.Eq):
-            taco += "eq\n"
-        elif isinstance(fig, figures.Cn):
-            taco += "cn\n"
+        if isinstance(fig, figures.Figure): # FIXME: maybe not needed
+            taco += fig.text + "\n"
+        else:
+            raise Exception
         taco += fig.get_as_str() + "\n"
     for (prm, scl) in params.items():
         taco = re.sub(r"\b" + prm + r"\b", "{:.4f}".format(scl.get()), taco)
@@ -129,7 +135,14 @@ def draw_tk_img():
     print(taco)
     r.reset()
     try:
-        r.draw_taco(taco)
+        if False: # speed test
+            t0 = time.process_time()
+            for i in range(100):
+                r.draw_taco(taco)
+            t1 = time.process_time()
+            print("Time: " + str(t1 - t0))
+        else:
+            r.draw_taco(taco)
     except SyntaxError as se:
         print(str(se))
 
@@ -148,6 +161,13 @@ entry_type = tk.StringVar()
 rb_frame = tk.Frame(right_frame)
 rb_frame.pack(anchor=tk.N)
 
+rb_pt = tk.Radiobutton(
+    rb_frame,
+    text="point",
+    variable=entry_type,
+    value="pt"
+)
+rb_pt.pack(anchor=tk.W)
 rb_ln = tk.Radiobutton(
     rb_frame,
     text="line",

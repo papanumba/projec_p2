@@ -10,6 +10,8 @@ pub Taco: ast::Taco = {
 }
 
 Fig: ast::Fig = {
+    "pt" <v:Vec3> => ast::Fig::Pt(v),
+    "ln" <v:Vec3> <w:Vec3> => ast::Fig::Ln(v, w),
     "eq" <v:Vec3> => ast::Fig::Eq(v),
     "cn" <m:Mat3> => ast::Fig::Cn(m),
 }
