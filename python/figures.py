@@ -129,20 +129,31 @@ class Cn(Figure):
 
 
 class Param:
-    def __init__(self, rootframe, name, cbk):
+    def __init__(self, rootframe, name, cbk, del_cbk):
         self.name = name
         self.frame = tk.Frame(rootframe)
         self.frame.pack(anchor=tk.S)
-        self.label = tk.Label(frame, name)
-        self.label.grid(row=0, column=0)
         self.scale = tk.Scale(
             self.frame,
+            label=self.name,
             from_=-1.0,
             to=1.0,
+            digits=2,
+            resolution=0.125,
             orient=tk.HORIZONTAL,
             command=cbk
         )
-        self.scale.grid(row=1, column=0)
+        self.scale.grid(row=0, column=0)
+        self.x_btn = tk.Button(
+            self.frame,
+            text="X",
+            fg="#FFFFFF",
+            bg="#DB0000",
+            activeforeground="#000000",
+            activebackground="#FF2400",
+            command=del_cbk
+        )
+        self.x_btn.grid(row=0, column=1)
 
     def get(self):
         return self.scale.get()

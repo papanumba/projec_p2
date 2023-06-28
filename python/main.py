@@ -82,26 +82,21 @@ def del_fig(idf):
 
 # add parameter Scale widget
 def add_par(name):
-    if name in params:
+    if name in params or name == "":
         raise KeyError
-    if name == "":
-        print("embty srting u idiot")
-        raise Error
-    s = tk.Scale(
+    params[name] = figures.Param(
         prm_frame,
-        label=name,
-        from_=-1.0,
-        to=+1.0,
-        resolution=0.125,
-        orient=tk.HORIZONTAL,
-        command=lambda v: update_tk_img()
+        name,
+        lambda v: update_tk_img(),
+        lambda: del_par(name)
     )
-    s.pack()
-    params[name] = s
 
 # delete parameter Object
-def del_par():
-    raise NotImplementedError
+def del_par(key):
+    if key not in params:
+        raise KeyError
+    params[key].frame.destroy()
+    del params[key]
 
 def update_tk_img():
     draw_tk_img()
@@ -112,10 +107,6 @@ def update_tk_img():
     ))
     proj_lab.image = tk_img
     proj_lab.configure(image=tk_img)
-'''
-    for e in entries:
-        r.draw_taco
-'''
 
 def preproc_taco():
     taco = ""
