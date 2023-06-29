@@ -133,6 +133,7 @@ class Param:
         self.name = name
         self.frame = tk.Frame(rootframe)
         self.frame.pack(anchor=tk.S)
+        self.frame.columnconfigure(1, weight=1)
         self.scale = tk.Scale(
             self.frame,
             label=self.name,
@@ -143,7 +144,7 @@ class Param:
             orient=tk.HORIZONTAL,
             command=cbk
         )
-        self.scale.grid(row=0, column=0)
+        self.scale.grid(row=0, column=1, sticky=tk.EW)
         self.x_btn = tk.Button(
             self.frame,
             text="X",
@@ -153,7 +154,27 @@ class Param:
             activebackground="#FF2400",
             command=del_cbk
         )
-        self.x_btn.grid(row=0, column=1)
+        self.x_btn.grid(row=0, column=3)
+        self.lo_entry = tk.Entry(self.frame, width=4)
+        self.lo_entry.bind("<Return>", self.update_lo)
+        self.lo_entry.insert(tk.END, "-1")
+        self.lo_entry.grid(row=0, column=0, sticky=tk.SE)
+        self.hi_entry = tk.Entry(self.frame, width=4)
+        self.hi_entry.bind("<Return>", self.update_hi)
+        self.hi_entry.insert(tk.END, "+1")
+        self.hi_entry.grid(row=0, column=2, sticky=tk.SW)
 
     def get(self):
         return self.scale.get()
+
+    def update_lo(self, *args):
+        try:
+            self.scale.configure(from_=float(self.lo_entry.get()))
+        except:
+            print("enter some numba u idiot")
+
+    def update_hi(self, *args):
+        try:
+            self.scale.configure(to=float(self.hi_entry.get()))
+        except:
+            print("enter some numba u idiot")
