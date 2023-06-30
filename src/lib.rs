@@ -61,9 +61,9 @@ impl ProjWrap
     }
 
     // returns 8-bit grayscale buffer
-    pub fn get_pix_buff(&self) -> Vec<u8>
+    pub fn get_pix_buff(&self) -> &[u8]
     {
-        return self.canvas.pix_flat();
+        return self.canvas.as_bytes();
     }
 }
 

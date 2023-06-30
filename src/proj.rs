@@ -1,12 +1,10 @@
 /* mod proj */
 
-//use image;
-
 use crate::linalg;
 
 pub struct ProjCanvas {
     n: usize,
-    pix: Vec<Vec<u8>>,
+    pix: Vec<u8>,
 }
 
 impl ProjCanvas
@@ -15,16 +13,14 @@ impl ProjCanvas
     {
         return Self {
             n: size,
-            pix: vec![vec![0u8; size]; size],
+            pix: vec![0u8; size * size],
         };
     }
 
     // clear canvas
     pub fn fill_zeros(&mut self)
     {
-        for row in &mut self.pix {
-            row.fill(0);
-        }
+        self.pix.fill(0);
     }
 
     // self.n (canvas size) getter
@@ -33,10 +29,10 @@ impl ProjCanvas
         return self.n;
     }
 
-    // return flattened Vec from the `self.pix` matrix
-    pub fn pix_flat(&self) -> Vec<u8>
+    // retorn referēnce to `self.pix` to be ūsed as bytes in python
+    pub fn as_bytes(&self) -> &[u8]
     {
-        return self.pix.concat();
+        return self.pix.as_slice();
     }
 
     // draw single pixel
@@ -82,18 +78,7 @@ impl ProjCanvas
         self.draw_fn(|vr| 10.0 * linalg::bilinear(&mat, &r2_to_s2(vr)))
     }
 
-/*    // write pix to image & save it to `outfname`
-    pub fn save_to_image(&self, outfname: &str)
-    {
-        // write out image
-        let w = self.n as u32;
-        let canvas_img: image::GrayImage =
-            image::ImageBuffer::from_raw(w, w, self.pix_flat())
-            .unwrap();
-        canvas_img.save_with_format(outfname, image::ImageFormat::Png)
-            .unwrap();
-    }
-*/
+
     /*** PRIVATE FUNCTIONS ***/
 
     #[inline]
@@ -105,7 +90,8 @@ impl ProjCanvas
         }
     }
 
-    fn draw_fn(&mut self, eval: impl Fn(&[f64; 2]) -> f64)
+    fn draw_fn<E>(&mut self, eval: E)
+    where E: Fn(&[f64; 2]) -> f64,
     {
         for i in 0..self.n {
             for j in 0..self.n {
@@ -123,7 +109,8 @@ impl ProjCanvas
     #[inline]
     fn put_max_pix(&mut self, x: usize, y: usize, p: u8)
     {
-        self.pix[x][y] = std::cmp::max(self.pix[x][y], p);
+        let idx: usize = x * self.n + y;
+        self.pix[idx] = std::cmp::max(self.pix[idx], p);
     }
 
     // affīne trānsfōrm that maps līnearly
