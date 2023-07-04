@@ -4,9 +4,10 @@ import projec_p2 # rust lib
 import tkinter as tk
 import PIL
 from PIL import ImageTk
-import figures
 import re
 import time
+import figures
+#import menu
 
 # global projec_p2 object
 
@@ -22,6 +23,11 @@ rootwin.title("Projec P2")
 #icon = tk.PhotoImage(file="./icon16.png")
 #rootwin.iconphoto(True,icon)
 
+# MENU
+
+#menu.init_menu(rootwin)
+
+# IMAGE global var
 
 tk_img = PIL.ImageTk.PhotoImage(PIL.Image.frombuffer(
     mode="L",
@@ -66,7 +72,7 @@ def add_fig(fig_type):
     elif fig_type == "cn":
         fig = figures.Cn(right_frame, idf, lambda: del_fig(idf))
     else:
-        raise Error
+        raise Exception
     entries.append(fig)
 
 def del_fig(idf):
@@ -110,20 +116,20 @@ def update_tk_img():
 
 def preproc_taco():
     taco = ""
+    for (prm, scl) in params.items():
+        taco += f"param {prm} = {scl.get()}\n"
     for fig in entries:
         if isinstance(fig, figures.Figure): # FIXME: maybe not needed
             taco += fig.text + "\n"
         else:
             raise Exception
         taco += fig.get_as_str() + "\n"
-    for (prm, scl) in params.items():
-        taco = re.sub(r"\b" + prm + r"\b", "{:.4f}".format(scl.get()), taco)
     return taco
 
 def draw_tk_img():
     global tk_img
     taco = preproc_taco()
-    print(taco)
+#    print(taco)
     r.reset()
     try:
         if False: # speed test

@@ -11,6 +11,7 @@ extern crate lalrpop_util;
 
 use pyo3::prelude::*;
 use pyo3::exceptions::*;
+use regex;
 
 mod linalg;
 mod proj;
@@ -29,7 +30,6 @@ impl ProjWrap
     #[new]
     fn new(n: usize) -> PyResult<Self>
     {
-        //println!("creating obj");
         return match n {
             0 => Err(PyValueError::new_err("Error from rust: size is 0")),
             _ => Ok(Self { canvas : proj::ProjCanvas::new(n) }),
@@ -46,8 +46,9 @@ impl ProjWrap
     pub fn draw_taco(&mut self, pretaco: &str) -> PyResult<()>
     {
         // parse
+        let newtaco = param_taco(pretaco);
         let tarser = repenser::TacoParser::new();
-        let result = tarser.parse(pretaco);
+        let result = tarser.parse(&newtaco);
         let taco: ast::Taco;
         match result {
             Ok(t) => taco = t,
@@ -79,6 +80,49 @@ impl ProjWrap
             ast::Fig::Cn(m) => self.canvas.draw_conic(&m),
         }
     }
+}
+
+// param preprocess
+// TODO: clean þis big mess
+fn param_taco(t: &str) -> String
+{
+    let mut res = String::from(t);
+    let param_re = regex::Regex::new(
+        r"^param [A-Za-z]\w* = [+-]?\d+(\.\d+)?$"
+    ).unwrap();
+    let ident_re = regex::Regex::new(
+        r"\b[A-Za-z]\w*\b"
+    ).unwrap();
+    let float_re = regex::Regex::new(
+        r"[+-]?\b\d+(\.\d+)?\b"
+    ).unwrap();
+    let mut pos: usize = 0;
+
+    for line in t.lines() {
+        if line.len() < 2 {
+            pos += line.len() + 1;
+            continue;
+        }
+        match &line[0..2] {
+            // found start of main scrīpt
+            "pt" | "ln" | "eq" | "cn" => return res[pos..].to_string(),
+            _ => {},
+        }
+
+        if param_re.is_match(&line) {
+            let ident = ident_re.find(&line[6..]).unwrap().as_str();
+            let float = float_re.find(&line)     .unwrap().as_str();
+            let repla = format!("({})", float);
+            let this_ident_re = regex::Regex::new(
+                format!("\\b{}\\b", ident).as_str()).unwrap();
+            res = this_ident_re.replace_all(&res, &repla).to_string();
+            pos += (repla.len() as isize -
+                    ident.len() as isize) as usize;
+        }
+        pos += line.len() + 1;
+    }
+
+    return res;
 }
 
 /* pyo3 boiler-plate */

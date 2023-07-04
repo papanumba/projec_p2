@@ -62,8 +62,8 @@ class Pt(Figure):
     def get_as_str(self):
         s = ""
         for j in range(3):
-            s += format_float(self.vec[j].get()) + " "
-        s = s[:-1]
+            s += format_float(self.vec[j].get()) + ", "
+        #s = s[:-1]
         return s
 
 
@@ -83,9 +83,9 @@ class Ln(Figure):
         s = ""
         for i in range(2):
             for j in range(3):
-                s += format_float(self.pts[i][j].get()) + " "
-            s = s[:-1] + "\n"
-        s = s[:-1]
+                s += format_float(self.pts[i][j].get()) + ", "
+            s += "\n"
+        #s = s[:-1]
         return s
 
 
@@ -101,8 +101,8 @@ class Eq(Figure):
     def get_as_str(self):
         s = ""
         for j in range(3):
-            s += format_float(self.vec[j].get()) + " "
-        s = s[:-1]
+            s += format_float(self.vec[j].get()) + ", "
+        #s = s[:-1]
         return s
 
 
@@ -122,9 +122,9 @@ class Cn(Figure):
         s = ""
         for i in range(3):
             for j in range(3):
-                s += format_float(self.mat[i][j].get()) + " "
-            s = s[:-1] + "\n"
-        s = s[:-1]
+                s += format_float(self.mat[i][j].get()) + ", "
+            s += "\n"
+#        s = s[:-1]
         return s
 
 

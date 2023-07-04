@@ -21,9 +21,27 @@ Mat3: ast::Mat3 = {
 }
 
 Vec3: ast::Vec3 = {
-    Num Num Num => [<>]
+    <a:Expr> "," <b:Expr> "," <c:Expr> "," => [a, b, c]
+}
+
+pub Expr: f64 = {
+    <l:Expr> "+" <r:Factor> => l + r,
+    <l:Expr> "-" <r:Factor> => l - r,
+    Factor,
+}
+
+Factor: f64 = {
+    <l:Factor> "*" <r:Term> => l * r,
+    <l:Factor> "/" <r:Term> => l / r,
+    Term,
+}
+
+Term: f64 = {
+    Num,
+    "(" <Expr> ")",
+    "(" "-" <e:Term> ")" => -e
 }
 
 Num: f64 = {
-    r"[+-]?[0-9]+(\.[0-9]+)?" => f64::from_str(<>).unwrap()
+    r"[0-9]+(\.[0-9]+)?" => f64::from_str(<>).unwrap()
 }
