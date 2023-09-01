@@ -37,9 +37,17 @@ tk_img = PIL.ImageTk.PhotoImage(PIL.Image.frombuffer(
 proj_lab = tk.Label(rootwin, image = tk_img)
 proj_lab.pack(anchor=tk.NW, side=tk.LEFT)
 
+# construct þe R frame: all buttons & entries
+
 right_frame = tk.Frame(rootwin)
 right_frame.pack(anchor=tk.NW, expand=True, fill=tk.X, side=tk.LEFT)
 
+# error indicator images (load)
+error_img = PIL.ImageTk.PhotoImage(PIL.Image.open("../img/error.bmp"))
+allok_img = PIL.ImageTk.PhotoImage(PIL.Image.open("../img/allok.bmp"))
+errind = tk.Label(right_frame, image = allok_img)
+
+# param name entry
 prm_entry = tk.Entry(right_frame)
 prm_entry.pack(anchor=tk.S)
 prm_buton = tk.Button(
@@ -140,12 +148,16 @@ def draw_tk_img():
             print("Time: " + str(t1 - t0))
         else:
             r.draw_taco(taco)
+        errind.configure(image = allok_img)
     except SyntaxError as se:
+        # print error
         print(str(se))
+        # show err icon
+        errind.configure(image = error_img)
 
 b4 = tk.Button(
     master=right_frame,
-    text="TACO",
+    text="DRAW",
 #    bg="#DBDBFF",
     command=update_tk_img,
     width=10,
@@ -153,6 +165,8 @@ b4 = tk.Button(
 )
 b4.pack(anchor=tk.N)
 
+# error indicator image label
+errind.pack(anchor=tk.N)
 
 entry_type = tk.StringVar()
 rb_frame = tk.Frame(right_frame)
@@ -189,7 +203,7 @@ rb_cn.pack(anchor=tk.W)
 
 be = tk.Button(
     master=right_frame,
-    text="NEW\nENTRI",
+    text="NEW\nFIG",
 #    bg="#DBDBFF",
     command=lambda:add_fig(entry_type.get()),
     width=10,
